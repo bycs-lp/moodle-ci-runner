@@ -103,6 +103,7 @@ function phpunit_modules() {
         docker-solr
         docker-mlbackend
         docker-php
+        docker-rabbitmq
         moodle-config
         moodle-core-copy
         docker-healthy

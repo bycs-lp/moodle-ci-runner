@@ -18,45 +18,40 @@
 # LDAP module functions.
 
 # This module defines the following env variables.
+# LDAP module – osixia/openldap ersetzt larrycai/openldap.
+# Das originale Image crasht auf modernen Kerneln (ch_calloc ... failed).
 function docker-ldap_env() {
-    env=(
-        LDAPTESTURL
-    )
+    env=(LDAPTESTURL)
     echo "${env[@]}"
 }
 
-# LDAP module checks.
 function docker-ldap_check() {
-    # Check all module dependencies.
     verify_modules docker
-
-    # These env variables must be set for the database module to work.
     verify_env NETWORK UUID
 }
 
-# LDAP module config.
 function docker-ldap_config() {
     LDAP=ldap"${UUID}"
     LDAPTESTURL="ldap://${LDAP}"
 }
 
-# LDAP module setup, launch the containers.
 function docker-ldap_setup() {
     echo
     echo ">>> startsection Starting LDAP server <<<"
     echo "============================================================================"
-
-    # Start the ldap server
     docker run \
         --detach \
         --name "${LDAP}" \
         --network "${NETWORK}" \
-        larrycai/openldap
-
+        -e LDAP_ORGANISATION="openstack" \
+        -e LDAP_DOMAIN="openstack.org" \
+        -e LDAP_ADMIN_PASSWORD="password" \
+        --health-cmd="ldapsearch -x -H ldap://localhost -b 'dc=openstack,dc=org' -D 'cn=admin,dc=openstack,dc=org' -w password '(objectclass=*)' || exit 1" \
+        --health-interval=5s \
+        --health-timeout=5s \
+        --health-retries=10 \
+        osixia/openldap:1.5.0
     echo "LDAP: URL: ${LDAPTESTURL}"
-    echo "LDAP logs:"
-    docker logs "${LDAP}"
-
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
