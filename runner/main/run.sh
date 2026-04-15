@@ -100,7 +100,7 @@ mkdir -p "${SHAREDDIR}"
 chmod -R g+sw,a+sw "${SHAREDDIR}"
 
 # UUID to be used as suffix for the containers and other stuff.
-UUID=$(uuid | sha1sum | awk '{print $1}' | head -c 16)
+UUID="${UUID:-$(uuid | sha1sum | awk '{print $1}' | head -c 16)}"
 
 # Job type to run (from "jobtypes" directory).
 # BC compatibility with old phpunit and behat variable names.
