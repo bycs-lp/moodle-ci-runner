@@ -18,6 +18,22 @@
 # Functions needed to init the database.
 # This database supports both standalone and primary-replica setups.
 
+# Print runtime diagnostics without breaking the job if checks fail.
+function mysqli_print_runtime_diagnostics() {
+    local container="$1"
+    local role="$2"
+
+    echo "--- MYSQL-DIAG [${role}] container=${container} ---"
+    if ! docker exec "${container}" sh -c 'echo "Config files in /etc/mysql/conf.d:"; ls -1 /etc/mysql/conf.d'; then
+        echo "WARNING: MYSQL-DIAG [${role}] cannot list /etc/mysql/conf.d"
+    fi
+
+    if ! docker exec "${container}" mysql -u root -p"${DBPASS}" -N -B -e "SHOW VARIABLES WHERE Variable_name IN ('log_bin','log_bin_basename','datadir','server_id','binlog_expire_logs_seconds','max_binlog_size');"; then
+        echo "WARNING: MYSQL-DIAG [${role}] cannot query MySQL variables"
+    fi
+    echo "--- /MYSQL-DIAG [${role}] ---"
+}
+
 # Init a standalone database container. Without replicas.
 function mysqli_config_standalone() {
     echo "Starting standalone database..."
@@ -36,6 +52,8 @@ function mysqli_config_standalone() {
     # Wait few secs, before executing commands.
     # TODO: Find a better way to wait for the database to be ready.
     sleep 20
+
+    mysqli_print_runtime_diagnostics "${DBHOST}" "standalone"
 }
 
 # Init a primary  database container. With replicas.
@@ -59,6 +77,8 @@ function mysqli_config_with_replicas() {
     # TODO: Find a better way to wait for the database to be ready.
     sleep 20
 
+    mysqli_print_runtime_diagnostics "${DBHOST}" "primary"
+
     echo "Starting replica database..."
     docker run \
         --detach \
@@ -78,4 +98,6 @@ function mysqli_config_with_replicas() {
     # Wait few secs, before executing commands.
     # TODO: Find a better way to wait for the database to be ready.
     sleep 20
+
+    mysqli_print_runtime_diagnostics "${DBHOST_DBREPLICA}" "replica"
 }
