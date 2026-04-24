@@ -58,7 +58,7 @@ function docker-php_setup() {
       -e "APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT}" \
       -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
       -v "${SHAREDDIR}":/shared \
-      -v "${BASEDIR}/modules/docker-php/entrypoint":/docker-entrypoint.d \
+      -v "${HOSTBASEDIR}/modules/docker-php/entrypoint":/docker-entrypoint.d \
       "${DOCKER_PHP}"
 
     # Ensure that the whole .composer directory is writable to all (www-data needs to write there).
