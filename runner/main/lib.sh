@@ -21,6 +21,68 @@ __CHECKED_MODULES=()
 
 # Various utility functions used by the CI scripts.
 
+# Translate a container-internal path to the equivalent Docker-host path.
+# In Docker-socket-sharing CI setups the Docker daemon sees host paths,
+# not paths inside the CI runner container.  Bind-mounts (-v) therefore
+# need the host-side path.  This function detects the mapping by
+# inspecting our own container's mounts and returns the translated path.
+# Outside a container the path is returned unchanged.
+function resolve_docker_host_path() {
+    local path="$1"
+
+    # Not inside a container? Nothing to translate.
+    if [[ ! -f /.dockerenv ]]; then
+        echo "${path}"
+        return
+    fi
+
+    # Obtain our own container ID.
+    local cid=""
+    # Try /proc/self/cgroup (works on cgroup v1 and many v2 setups).
+    if [[ -r /proc/self/cgroup ]]; then
+        cid=$(sed -n 's|.*/docker/\([0-9a-f]\{64\}\)$|\1|p' /proc/self/cgroup 2>/dev/null | head -1)
+    fi
+    # Fallback: /proc/self/mountinfo contains the container ID in the
+    # mount source for the hostname file.
+    if [[ -z "${cid}" ]] && [[ -r /proc/self/mountinfo ]]; then
+        cid=$(sed -n 's|.*\/containers/\([0-9a-f]\{64\}\)/.*|\1|p' /proc/self/mountinfo 2>/dev/null | head -1)
+    fi
+    # Last resort: hostname (commonly equals the short container ID).
+    if [[ -z "${cid}" ]]; then
+        cid=$(hostname)
+    fi
+
+    # Query our mounts via the Docker API.
+    local mounts=""
+    mounts=$(docker inspect "${cid}" --format \
+        '{{range .Mounts}}{{.Source}}{{"\t"}}{{.Destination}}{{"\n"}}{{end}}' 2>/dev/null) || {
+        # docker inspect failed — return original path as fallback.
+        echo "${path}"
+        return
+    }
+
+    # Find the mount whose Destination is the longest prefix of $path.
+    local best_src="" best_dest="" src dest
+    while IFS=$'\t' read -r src dest; do
+        [[ -z "${dest}" ]] && continue
+        # Check if $path starts with $dest (exact match or sub-path).
+        if [[ "${path}" == "${dest}" || "${path}" == "${dest}/"* ]]; then
+            if [[ ${#dest} -gt ${#best_dest} ]]; then
+                best_src="${src}"
+                best_dest="${dest}"
+            fi
+        fi
+    done <<< "${mounts}"
+
+    if [[ -n "${best_dest}" ]]; then
+        # Replace the container-side prefix with the host-side prefix.
+        echo "${best_src}${path#"${best_dest}"}"
+    else
+        # No matching mount found — return path unchanged.
+        echo "${path}"
+    fi
+}
+
 # Verify that all the specified env variables are set.
 function verify_env() {
     local error=

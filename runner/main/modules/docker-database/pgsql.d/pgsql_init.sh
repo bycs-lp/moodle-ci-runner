@@ -29,7 +29,7 @@ function pgsql_config_standalone() {
         -e POSTGRES_USER=moodle \
         -e POSTGRES_PASSWORD=moodle \
         --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
-        -v "${BASEDIR}/modules/docker-database/pgsql.d/standalone:/docker-entrypoint-initdb.d" \
+        -v "${HOSTBASEDIR}/modules/docker-database/pgsql.d/standalone:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 
     # Wait few secs, before executing commands.
@@ -49,7 +49,7 @@ function pgsql_config_with_replicas() {
         -e POSTGRES_PASSWORD=moodle \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
         --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
-        -v "${BASEDIR}/modules/docker-database/pgsql.d/primary:/docker-entrypoint-initdb.d" \
+        -v "${HOSTBASEDIR}/modules/docker-database/pgsql.d/primary:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 
     # Wait few secs, before executing commands.
@@ -67,7 +67,7 @@ function pgsql_config_with_replicas() {
         -e DBHOST="${DBHOST}" \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
         --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
-        -v "${BASEDIR}/modules/docker-database/pgsql.d/replica:/docker-entrypoint-initdb.d" \
+        -v "${HOSTBASEDIR}/modules/docker-database/pgsql.d/replica:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 
     # Wait few secs, before executing commands.

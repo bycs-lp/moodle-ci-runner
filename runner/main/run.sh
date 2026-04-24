@@ -27,6 +27,12 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Include the functions.
 source "${BASEDIR}/lib.sh"
 
+# In Docker-socket-sharing CI setups, bind-mount paths (-v) must
+# reference the Docker host filesystem.  HOSTBASEDIR holds the
+# translated path for use in docker run -v mounts.
+# BASEDIR stays unchanged for sourcing scripts and local file access.
+HOSTBASEDIR="$(resolve_docker_host_path "${BASEDIR}")"
+
 # Trap to finish the execution (exit and Ctrl+C).
 trap trap_exit EXIT
 trap trap_ctrl_c INT
