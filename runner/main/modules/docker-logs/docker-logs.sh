@@ -51,6 +51,18 @@ function docker-logs_teardown() {
 if [[ -n "${WEBSERVER:-}" ]] && [[ -n $(docker ps --filter name="${WEBSERVER}" --filter status=running --quiet) ]]; then
     docker exec -t "${WEBSERVER}" \
         chown -R "${UID}:${GROUPS[0]}" /shared
+
+    # Extract test artifacts from the container's /shared mount.
+    # The Docker volume mount may not be visible from the CI job filesystem
+    # (e.g., when running with Docker-in-Docker or mounted Docker socket),
+    # so we use "docker cp" to reliably retrieve the files.
+    echo "Extracting test artifacts from webserver container..."
+    for artifact in log.junit log.html timing.json; do
+        if docker exec "${WEBSERVER}" test -f "/shared/${artifact}" 2>/dev/null; then
+            echo "  - Extracting /shared/${artifact} to ${SHAREDDIR}/${artifact}"
+            docker cp "${WEBSERVER}:/shared/${artifact}" "${SHAREDDIR}/${artifact}" 2>/dev/null || true
+        fi
+    done
 fi
 
 echo "============================================================================"
