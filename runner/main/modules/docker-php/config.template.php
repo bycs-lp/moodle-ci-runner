@@ -101,17 +101,17 @@ define('PHPUNIT_PATH_TO_SASSC', '/usr/bin/sassc');
 define('TEST_LDAPLIB_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_LDAPLIB_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_LDAPLIB_BIND_PW', 'password');
-define('TEST_LDAPLIB_DOMAIN', 'ou=Users,dc=openstack,dc=org');
+define('TEST_LDAPLIB_DOMAIN', 'dc=openstack,dc=org');
 
 define('TEST_AUTH_LDAP_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_AUTH_LDAP_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_AUTH_LDAP_BIND_PW', 'password');
-define('TEST_AUTH_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
+define('TEST_AUTH_LDAP_DOMAIN', 'dc=openstack,dc=org');
 
 define('TEST_ENROL_LDAP_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_ENROL_LDAP_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_ENROL_LDAP_BIND_PW', 'password');
-define('TEST_ENROL_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
+define('TEST_ENROL_LDAP_DOMAIN', 'dc=openstack,dc=org');
 
 if ($solrtestname = getenv('SOLRTESTNAME')) {
     define('TEST_SEARCH_SOLR_HOSTNAME', $solrtestname);
