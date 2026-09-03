@@ -51,6 +51,23 @@ function env_setup() {
     # Always make BUILD_NUMBER available, some old scripts use it.
     echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "${ENVIROPATH}"
 
+    # Forward selected Git variables so container-side git commands can use
+    # the same non-interactive/authenticated configuration as the caller.
+    local passthrough_git_env=(
+        GIT_TERMINAL_PROMPT
+        GIT_CONFIG_COUNT
+        GIT_CONFIG_KEY_0
+        GIT_CONFIG_VALUE_0
+    )
+    local var=
+    for var in "${passthrough_git_env[@]}"; do
+        if [[ -v ${var} ]]; then
+            # Docker does not support multiline env variables via --env-file.
+            value="${!var//$'\n'/}"
+            echo "${var}=${value}" >> "${ENVIROPATH}"
+        fi
+    done
+
     # Add all the variables that the job type requires.
     for var in $(get_job_to_env_file "${JOBTYPE}"); do
         # Docker does not support multiline env variables via --env-file, so we need to
