@@ -62,9 +62,12 @@ function docker_teardown() {
     echo ">>> startsection Cleaning up docker containers <<<"
     echo "============================================================================"
     echo "Stopping and removing all docker containers for UUID: ${UUID}"
-    docker ps -a --filter name="${UUID}"
+    # The name filter is a regular expression and the UUID is always used as a
+    # suffix of the container names, so anchor it. Otherwise a concurrent run
+    # whose UUID contains ours as a substring could have its containers removed.
+    docker ps -a --filter name="${UUID}$"
     echo
-    for container in $(docker ps -a -q --filter name="${UUID}"); do
+    for container in $(docker ps -a -q --filter name="${UUID}$"); do
         echo -n "  - Stopping and removing container "
         docker stop "${container}" | xargs docker rm --volumes
     done

@@ -42,7 +42,7 @@ function docker-healthy_setup() {
 
     for waitperiod in {0..90}; do
         # Note we cannot use the 'health' filter due to https://github.com/moby/moby/issues/35920
-        startingcount=$(($(docker ps -a --filter name="${UUID}" | c1grep -e starting -e unhealthy | wc -l)))
+        startingcount=$(($(docker ps -a --filter name="${UUID}$" | c1grep -e starting -e unhealthy | wc -l)))
         if [[ ${startingcount} -lt 1 ]]; then
             break
         fi
@@ -50,10 +50,10 @@ function docker-healthy_setup() {
         sleep 1
     done
 
-    startingcount=$(($(docker ps -a --filter name="${UUID}" | c1grep -e starting -e unhealthy | wc -l)))
+    startingcount=$(($(docker ps -a --filter name="${UUID}$" | c1grep -e starting -e unhealthy | wc -l)))
     if [[ ${startingcount} -gt 0 ]]; then
         print_error "Some containers were too slow. Aborting the run:"
-        exit_error "$(docker ps -a --filter name="${UUID}" | c1grep -e starting -e unhealthy)"
+        exit_error "$(docker ps -a --filter name="${UUID}$" | c1grep -e starting -e unhealthy)"
     fi
     echo "All containers started OK"
 
