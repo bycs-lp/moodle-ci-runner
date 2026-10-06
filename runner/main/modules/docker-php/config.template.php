@@ -127,6 +127,7 @@ if ($solrtestname = getenv('SOLRTESTNAME')) {
 if ($redistestname = getenv('REDISTESTNAME')) {
     define('TEST_SESSION_REDIS_HOST', $redistestname);
     define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
+    define('TEST_LOGSTORE_MBSLOGSTORE_QUEUE_SERVER', $redistestname);
 
     // Enable the local_redislock PHPUnit tests, which require a reachable Redis server (MBS-10949).
     define('LOCAL_REDISLOCK_REDIS_LOCK_TEST', true);
